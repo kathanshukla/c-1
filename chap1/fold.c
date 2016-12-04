@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define MAXLINE 10000
-#define LINE_WRAP_LENGTH 5
+#define LINE_WRAP_LENGTH 6
 
 
 int get_line(char line[], int maxline);
@@ -13,14 +13,16 @@ int main() {
   int len, start, end;
 
   while ((len = get_line(line, MAXLINE)) > 0) {
-    start = 0;
-    end = len;
+    start = end = 0;
     if (len > LINE_WRAP_LENGTH) {
-      end = find_line_break_index(line, start, LINE_WRAP_LENGTH);
-      print_range(line, start, end);
-      print_range(line, end, len); // Assumes needs to wrap only once
+      while (end < len)
+      {
+        end = find_line_break_index(line, start, start+LINE_WRAP_LENGTH);
+        print_range(line, start, end);
+        start = end;
+      }
     } else {
-      print_range(line, start, end);
+      print_range(line, start, len);
     }
   }
 }
@@ -40,7 +42,8 @@ int get_line(char s[], int lim) {
 
 void print_range(char line[], int position, int end) {
   while (position < end) {
-    putchar(line[position]);
+    if (line[position] != '\n')
+      putchar(line[position]);
     position++;
   }
   if (line[end-1] != '\n')
