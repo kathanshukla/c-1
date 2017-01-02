@@ -1,2 +1,4 @@
 9
 2
+error: module operator only takes integer operands
+error: zero divisor

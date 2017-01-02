@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "calc.h"
 #define MAXOP 100
 
 
 int main() {
   int type;
-  double op2;
+  double op2, op1;
   char s[MAXOP];
 
   while ((type = getop(s)) != EOF) {
@@ -30,14 +31,20 @@ int main() {
           push(pop() / op2);
         } else {
           printf("error: zero divisor\n");
+          return 1;
         }
         break;
       case '%':
         op2 = pop();
-        if (op2 != 0.0) {
-          push((int)pop() % (int)op2);
-        } else {
+        op1 = pop();
+        if (op2 == 0.0) {
           printf("error: zero divisor\n");
+          return 1;
+        } else if (op2 != (int)op2 || op1 != (int)op1 ) {
+          printf("error: module operator only takes integer operands\n");
+          return 1;
+        } else {
+          push((int)op1 % (int)op2);
         }
         break;
       case '\n':
