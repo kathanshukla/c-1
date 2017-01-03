@@ -5,12 +5,22 @@
 #define MAXOP 100
 
 
+// TODO: Add error function with message, clear and error flag setting
+
 int main() {
-  int type;
+  int type, errored;
   double op2, op1;
   char s[MAXOP];
 
+  errored = 0;
+
   while ((type = getop(s)) != EOF) {
+    if (errored) {
+      if (type == '\n') {
+        errored = 0;
+      }
+      continue;
+    }
     switch (type) {
       case NUMBER:
         push(atof(s));
@@ -31,7 +41,8 @@ int main() {
           push(pop() / op2);
         } else {
           printf("error: zero divisor\n");
-          return 1;
+          errored = 1;
+          clear();
         }
         break;
       case '%':
@@ -39,19 +50,24 @@ int main() {
         op1 = pop();
         if (op2 == 0.0) {
           printf("error: zero divisor\n");
-          return 1;
+          errored = 1;
+          clear();
         } else if (op2 != (int)op2 || op1 != (int)op1 ) {
           printf("error: module operator only takes integer operands\n");
-          return 1;
+          errored = 1;
+          clear();
         } else {
           push((int)op1 % (int)op2);
         }
         break;
       case '\n':
         printf("%.8g\n", pop());
+        clear();
         break;
       default:
         printf("Error: unknown command %s\n", s);
+        errored = 1;
+        clear();
         break;
     }
   }

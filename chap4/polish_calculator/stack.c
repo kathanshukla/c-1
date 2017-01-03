@@ -24,3 +24,7 @@ double pop(void) {
     return 0;
   }
 }
+
+void clear(void) {
+  sp = 0;
+}
