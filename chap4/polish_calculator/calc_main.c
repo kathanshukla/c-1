@@ -53,12 +53,28 @@ int main() {
           errored = 1;
           clear();
         } else if (op2 != (int)op2 || op1 != (int)op1 ) {
-          printf("error: module operator only takes integer operands\n");
+          printf("error: modulo operator only takes integer operands\n");
           errored = 1;
           clear();
         } else {
           push((int)op1 % (int)op2);
         }
+        break;
+      case SIN:
+        push(sin(pop()));
+        break;
+      case COS:
+        push(cos(pop()));
+        break;
+      case TAN:
+        push(tan(pop()));
+        break;
+      case EXP:
+        push(exp(pop()));
+        break;
+      case POW:
+        op2 = pop();
+        push(pow(pop(), op2));
         break;
       case '\n':
         printf("%.8g\n", pop());

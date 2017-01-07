@@ -1,4 +1,14 @@
 9
 2
-error: module operator only takes integer operands
+error: modulo operator only takes integer operands
 error: zero divisor
+-4
+100
+15.53
+-12.015
+error: modulo operator only takes integer operands
+0.84147098
+2.7182818
+0.54030231
+1.5574077
+4
