@@ -42,11 +42,11 @@ int getop(char s[]) {
       ;
     s[i] = '\0';
     ungetch(c);
-    if (strncmp(s, "sin", 3) == 0) {
+    if (strncmp(s, "sin", 10) == 0) {
       retval = SIN;
-    } else if (strncmp(s, "tan", 3) == 0) {
+    } else if (strncmp(s, "tan", 10) == 0) {
       retval = TAN;
-    } else if (strncmp(s, "cos", 3) == 0) {
+    } else if (strncmp(s, "cos", 10) == 0) {
       retval = COS;
     } else if (strncmp(s, "pow", 3) == 0) {
       retval = POW;
