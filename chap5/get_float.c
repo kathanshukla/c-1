@@ -1,22 +1,24 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <math.h>
 #define SIZE 20
 
 
 int main() {
-  int n, getfloat(double *);
+  int getfloat(double *), ret_val;
   double array[SIZE];
+  double *ap = array;
 
-  for (n = 0; n < SIZE && getfloat(&array[n]) != 0 && getfloat(&array[n]) != EOF; n++)
-    printf("%f\n", array[n]);
+  for (ret_val=getfloat(ap); ret_val != 0 && ret_val != EOF; ret_val=getfloat(++ap)) {
+    printf("Value: %f\tPointer: %p\n", *ap, ap);
+  }
 }
 
 int getch(void);
 void ungetch(int);
 
-// Figure out why this doesnt work
 int getfloat(double *pn) {
-  int c, sign, decimal_places;
+  int c, sign, divide_factor;
 
   while (isspace(c = getch()))
     ;
@@ -36,11 +38,11 @@ int getfloat(double *pn) {
     *pn = 10 * *pn + (c - '0');
   if (c == '.') {
     c = getch();
-    for (decimal_places = 0; isdigit(c); c = getch()) {
-      decimal_places++;
+    for (divide_factor = 1; isdigit(c); c = getch()) {
+      divide_factor *= 10;
       *pn = 10 * *pn + (c - '0');
     }
-    *pn /= 10 * decimal_places;
+    *pn /= divide_factor;
   }
   *pn *= sign;
   if (c != EOF)
