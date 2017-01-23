@@ -33,9 +33,9 @@ int str_end(char *s, char *t) {
     return 0;
   }
 
-  while (*++s != '\0') // Doesnt deal with empty strings
+  while (*++s != '\0')
     ;
-  while (*++t != '\0') // Doesnt deal with empty strings
+  while (*++t != '\0')
     ;
   while ((*--s == *--t) && (t >= t_start))
     ;
