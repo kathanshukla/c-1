@@ -16,22 +16,24 @@ int main(int argc, char *argv[])
 {
   int nlines;
   int numeric = 0, reversed = 0;
+  char c;
 
   while (--argc > 0 && (*++argv)[0] == '-') {
-    switch ((*argv)[1]) {
-      case 'n':
-        numeric = 1;
-        break;
-      case 'r':
-        reversed = 1;
-        break;
-      default:
-        printf("Unrecognised option %c\n", (*argv)[1]);
-        break;
+    while ((c = *++argv[0])) {
+      switch (c) {
+        case 'n':
+          numeric = 1;
+          break;
+        case 'r':
+          reversed = 1;
+          break;
+        default:
+          printf("Unrecognised option %c\n", c);
+          break;
+      }
     }
   }
-  // if (argc > 1 && strcmp(argv[1], "-n"))
-  //   numeric = 1;
+
   if ((nlines = readlines(lineptr, MAXLINES)) >= 0) {
     quicksort((void **) lineptr, 0, nlines-1, reversed,
           (int (*)(void*, void*))(numeric ? numcmp : strcmp)
