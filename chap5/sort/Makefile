@@ -1,5 +1,5 @@
 build:
-	cc sort.c ../../utils/readline.c ../../utils/alloc.c ../../utils/get_line.c -o sort.out
+	cc sort.c qsort.c ../../utils/readline.c ../../utils/alloc.c ../../utils/get_line.c -o sort.out
 
 test-alpha: build
 	cat fixture.txt | ./sort.out
