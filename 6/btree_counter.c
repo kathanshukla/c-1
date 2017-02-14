@@ -4,9 +4,13 @@
 
 #define MAXWORD 100
 
-typedef struct tnode {
+typedef struct list_el {
   char *word;
-  int count;
+  struct list_el* next;
+} LinkedListEl;
+
+typedef struct tnode {
+  LinkedListEl* words;
   struct tnode *left;
   struct tnode *right;
 } Treenode;
