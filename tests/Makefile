@@ -9,3 +9,4 @@ test-get-word: build-get-word
 	echo "##define TEST 1" | ./_get_word.out
 	echo "# a comment" | ./_get_word.out
 	echo "my_var = 1" | ./_get_word.out
+	echo "new\nline" | ./_get_word.out
