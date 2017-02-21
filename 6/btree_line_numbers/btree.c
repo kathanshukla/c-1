@@ -3,87 +3,112 @@
 #include <stdio.h>
 
 
+typedef struct list_el {
+  int line_no;
+  struct list_el* next;
+} LinkedListEl;
+
+
 typedef struct tnode {
   char *word;
-  int* line_numbers;
-  int total_linenumbers;
+  LinkedListEl* line_numbers;
+  int count;
   struct tnode *left;
   struct tnode *right;
 } Treenode;
-//
-//
-// static Treenode *talloc(void);
-// static char *strdup_(char *);
-//
-Treenode *addtree(Treenode *p, char *w)
+
+
+static Treenode *talloc(void);
+static char *strdup_(char *);
+static LinkedListEl* new_list_el(int);
+LinkedListEl* prepend_line_count_if_unique(LinkedListEl*, int);
+void listprint(LinkedListEl*);
+
+
+Treenode *addtree(Treenode *p, char *w, int line_no)
 {
-  // int cond;
-  //
-  // if (p == NULL) {
-  //   // Initialise a new node
-  //   p = talloc();
-  //   p->words = new_list_with_word(w);
-  //   p->left = p->right = NULL;
-  // } else if ((cond = strncmp(w, p->words->word, 2)) == 0) {
-  //   // push the new word onto the linked list if unique
-  //   append_unique_new_word(p->words, w);
-  // } else if (cond < 0) {
-  //   p->left = addtree(p->left, w);
-  // } else {
-  //   p->right = addtree(p->right, w);
-  // }
-  // return p;
-  return NULL;
+  int cond;
+
+  if (p == NULL) {
+    // Initialise a new node
+    p = talloc();
+    p->word = strdup_(w);
+    p->count = 1;
+    p->line_numbers = new_list_el(line_no);
+    p->left = p->right = NULL;
+  } else if ((cond = strcmp(w, p->word)) == 0) {
+    p->count++;
+    p->line_numbers = prepend_line_count_if_unique(p->line_numbers, line_no);
+  } else if (cond < 0) {
+    p->left = addtree(p->left, w, line_no);
+  } else {
+    p->right = addtree(p->right, w, line_no);
+  }
+  return p;
 }
 
 void treeprint(Treenode *p)
 {
   if (p != NULL) {
     treeprint(p->left);
-    // listprint(p->words);
+    printf("%s: ", p->word);
+    listprint(p->line_numbers);
+    printf("\n");
     treeprint(p->right);
   }
 }
-//
-//
-// static Treenode *talloc(void)
-// {
-//   return (Treenode *) malloc(sizeof(Treenode));
-// }
-//
-// static char *strdup_(char *s)
-// {
-//   char *p;
-//
-//   p = (char *) malloc(strlen(s) + 1);
-//   if (p != NULL) {
-//     strcpy(p, s);
-//   }
-//   return p;
-// }
-//
-// // Returns a pointer to a new list element containing S
-// static LinkedListEl* new_list_with_word(char* s)
-// {
-//   char* stored_word = strdup_(s);
-//   LinkedListEl* new_el;
-//   new_el = malloc(sizeof(LinkedListEl));
-//   new_el->word = stored_word;
-//   new_el->next = NULL;
-//   return new_el;
-// }
-//
-// // Iterates through the linked list and adds a new word if not found
-// void append_unique_new_word(LinkedListEl* list, char* s)
-// {
-//   if (strcmp(s, list->word) == 0) {
-//     // If word match is found, do nothing
-//     return;
-//   } else if (list->next == NULL) {
-//     // If at end of list, add new element
-//     list->next = new_list_with_word(s);
-//   } else {
-//     // Keep searching through list
-//     append_unique_new_word(list->next, s);
-//   }
-// }
+
+void listprint(LinkedListEl* list)
+{
+  if (list != NULL) {
+    listprint(list->next);
+    printf("%d, ", list->line_no); // print in reverse order
+  }
+}
+
+
+static Treenode *talloc(void)
+{
+  return (Treenode *) malloc(sizeof(Treenode));
+}
+
+static char *strdup_(char *s)
+{
+  char *p;
+
+  p = (char *) malloc(strlen(s) + 1);
+  if (p != NULL) {
+    strcpy(p, s);
+  }
+  return p;
+}
+
+// Returns a pointer to a new list element containing S
+static LinkedListEl* new_list_el(int line_no)
+{
+  LinkedListEl* new_el;
+  new_el = malloc(sizeof(LinkedListEl));
+  new_el->line_no = line_no;
+  new_el->next = NULL;
+  return new_el;
+}
+
+/*
+  Checks if the line number is at the front of the linkedlist already
+  and prepends it if its now
+
+  Returns a pointer to the new head of the list
+*/
+LinkedListEl* prepend_line_count_if_unique(LinkedListEl* list_el, int line_no)
+{
+  LinkedListEl* new_el;
+
+  if (list_el->line_no == line_no) {
+    // Word already found in this line, return list_el
+    return list_el;
+  } else {
+    new_el = new_list_el(line_no);  // Create a new list element
+    new_el->next = list_el;  // Put in front of list_el
+    return new_el;
+  }
+}
