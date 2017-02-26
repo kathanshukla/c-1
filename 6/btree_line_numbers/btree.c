@@ -1,14 +1,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 
+#define debug(s) fprintf(stderr, s)
+#define debug_arg(s, ...) fprintf(stderr, s, __VA_ARGS__)
+
+// Struct to hold line numbers found for a word
 typedef struct list_el {
   int line_no;
   struct list_el* next;
 } LinkedListEl;
 
 
+// Struct to hold a tree node representing a word and its line numbers
 typedef struct tnode {
   char *word;
   LinkedListEl* line_numbers;
@@ -18,14 +24,26 @@ typedef struct tnode {
 } Treenode;
 
 
+// Struct to hold linked list elements for rebalancing the btree
+typedef struct node_list {
+  Treenode* node;
+  struct node_list* next;
+} NodeList;
+
+
+int num_nodes = 0;
 static Treenode *talloc(void);
 static char *strdup_(char *);
 static LinkedListEl* new_list_el(int);
 LinkedListEl* prepend_line_count_if_unique(LinkedListEl*, int);
 void listprint(LinkedListEl*);
+void treeprint_recur(Treenode *p);
+int min_theoretical_depth_btree(int, int);
+int max_depth_tree(Treenode*, int, int);
+Treenode* balance_tree(Treenode*);
 
 
-Treenode *addtree(Treenode *p, char *w, int line_no)
+Treenode *addtree(Treenode *p, char *w, int line_no, int depth)
 {
   int cond;
 
@@ -36,25 +54,41 @@ Treenode *addtree(Treenode *p, char *w, int line_no)
     p->count = 1;
     p->line_numbers = new_list_el(line_no);
     p->left = p->right = NULL;
+    num_nodes++;
   } else if ((cond = strcmp(w, p->word)) == 0) {
     p->count++;
     p->line_numbers = prepend_line_count_if_unique(p->line_numbers, line_no);
   } else if (cond < 0) {
-    p->left = addtree(p->left, w, line_no);
+    p->left = addtree(p->left, w, line_no, depth + 1);
   } else {
-    p->right = addtree(p->right, w, line_no);
+    p->right = addtree(p->right, w, line_no, depth + 1);
   }
   return p;
 }
 
+
 void treeprint(Treenode *p)
 {
+  debug("Printing tree\n");
+  printf(
+         "Number items: %d, "
+         "Depth: %d, "
+         "Theoretical min depth: %d\n\n"
+         ,
+         max_depth_tree(p, 0, 0),
+         num_nodes,
+         min_theoretical_depth_btree(num_nodes, 0));
+  treeprint_recur(p);
+}
+
+void treeprint_recur(Treenode *p)
+{
   if (p != NULL) {
-    treeprint(p->left);
+    treeprint_recur(p->left);
     printf("%s: ", p->word);
     listprint(p->line_numbers);
     printf("\n");
-    treeprint(p->right);
+    treeprint_recur(p->right);
   }
 }
 
@@ -111,4 +145,94 @@ LinkedListEl* prepend_line_count_if_unique(LinkedListEl* list_el, int line_no)
     new_el->next = list_el;  // Put in front of list_el
     return new_el;
   }
+}
+
+
+// calculate min depth of tree of n items
+int min_theoretical_depth_btree(int n_remaining_items, int depth)
+{
+  if (n_remaining_items < 0) {
+    return depth-1;
+  }
+  return min_theoretical_depth_btree(n_remaining_items - pow(2, depth), depth + 1);
+}
+
+// determine max depth of tree
+int max_depth_tree(Treenode* root, int depth, int max_depth)
+{
+  int max_depth_left, max_depth_right;
+  if (root == NULL) {
+    return depth - 1;
+  } else {
+    max_depth_left = max_depth_tree(root->left, depth+1, max_depth);
+    max_depth_right = max_depth_tree(root->right, depth+1, max_depth);
+    return max_depth_left > max_depth_right ? max_depth_left : max_depth_right;
+  }
+}
+
+// Returns a sorted list of Treenodes
+NodeList* build_sorted_node_list(Treenode* root)
+{
+  NodeList *left_el = NULL, *right_el = NULL, *right_most_of_left_child;
+  NodeList *el = malloc(sizeof(NodeList));
+  el->node = root;
+  el->next = NULL;
+  if (root->left != NULL) {
+    left_el = build_sorted_node_list(root->left);
+    for (right_most_of_left_child = left_el; right_most_of_left_child->next != NULL; right_most_of_left_child = right_most_of_left_child->next)
+    ;
+    right_most_of_left_child->next = el;
+  }
+  if (root->right != NULL) {
+    right_el = build_sorted_node_list(root->right);
+    el->next = right_el;
+  }
+  return (left_el != NULL) ? left_el : el;
+}
+
+NodeList* get_element_at_offset(NodeList* start, int offset)
+{
+  NodeList* el = start;
+  while (offset-- > 0) {
+    el = el->next;
+  }
+  return el;
+}
+
+// Build tree from sorted list
+Treenode* get_tree(NodeList* first, int num_items)
+{
+  int mid_offset = num_items / 2;
+  NodeList* mid_node_el = get_element_at_offset(first, mid_offset);
+  mid_node_el->node->left = NULL;
+  mid_node_el->node->right = NULL;
+  if (num_items > 1) {
+    mid_node_el->node->left = get_tree(first, mid_offset);
+    if (num_items > 2) {
+      mid_node_el->node->right = get_tree(mid_node_el->next, num_items - mid_offset - 1);
+    }
+  }
+  return mid_node_el->node;
+}
+
+void check_list_integrity(NodeList* first, int num_items) {
+  NodeList* el = first;
+  debug("Checking list\n");
+  while (num_items-- > 0) {
+    debug_arg("%s\n", el->node->word);
+    el = el->next;
+  }
+}
+
+Treenode* balance_tree(Treenode* root)
+{
+  Treenode* new_root;
+  NodeList* sorted_list;
+  debug("Making sorted list\n");
+  sorted_list = build_sorted_node_list(root);
+  check_list_integrity(sorted_list, num_nodes);
+  debug("Making new tree\n");
+  new_root = get_tree(sorted_list, num_nodes);
+  debug_arg("Built balanced tree. New root word is: %s\n", new_root->word);
+  return new_root;
 }

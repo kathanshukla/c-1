@@ -14,10 +14,12 @@ typedef struct tnode {
 } Treenode;
 
 
-Treenode *addtree(Treenode *, char *, int);
+Treenode *addtree(Treenode *, char *, int, int);
 void treeprint(Treenode *);
 int sget_word(char* s, char* word, int lim);
 int get_line(char *s, int lim);
+Treenode* balance_tree(Treenode*);
+
 
 int main()
 {
@@ -34,10 +36,13 @@ int main()
     linenumber++;
     while ((advanced = sget_word(line_pos = line_pos + advanced, word, 100)) > 0) {
       if (isalpha(word[0])) {
-        root = addtree(root, word, linenumber);
+        root = addtree(root, word, linenumber, 0);
       }
     }
   }
+  treeprint(root);
+  printf("\n\n##### BALANCED #####\n\n");
+  root = balance_tree(root);
   treeprint(root);
   return 0;
 }
