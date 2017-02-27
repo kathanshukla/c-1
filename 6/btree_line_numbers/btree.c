@@ -40,6 +40,7 @@ void listprint(LinkedListEl*);
 void treeprint_recur(Treenode *p);
 int min_theoretical_depth_btree(int, int);
 int max_depth_tree(Treenode*, int, int);
+void append_element(NodeList*, NodeList*);
 Treenode* balance_tree(Treenode*);
 
 
@@ -75,10 +76,10 @@ void treeprint(Treenode *p)
          "Depth: %d, "
          "Theoretical min depth: %d\n\n"
          ,
-         max_depth_tree(p, 0, 0),
          num_nodes,
+         max_depth_tree(p, 0, 0),
          min_theoretical_depth_btree(num_nodes, 0));
-  treeprint_recur(p);
+  // treeprint_recur(p);
 }
 
 void treeprint_recur(Treenode *p)
@@ -170,7 +171,7 @@ int max_depth_tree(Treenode* root, int depth, int max_depth)
   }
 }
 
-// Returns a sorted list of Treenodes
+// Returns a sorted linked list of Treenodes
 NodeList* build_sorted_node_list(Treenode* root)
 {
   NodeList *left_el = NULL, *right_el = NULL, *right_most_of_left_child;
@@ -179,15 +180,13 @@ NodeList* build_sorted_node_list(Treenode* root)
   el->next = NULL;
   if (root->left != NULL) {
     left_el = build_sorted_node_list(root->left);
-    for (right_most_of_left_child = left_el; right_most_of_left_child->next != NULL; right_most_of_left_child = right_most_of_left_child->next)
-    ;
-    right_most_of_left_child->next = el;
+    append_element(left_el, el);
   }
   if (root->right != NULL) {
     right_el = build_sorted_node_list(root->right);
     el->next = right_el;
   }
-  return (left_el != NULL) ? left_el : el;
+  return (left_el != NULL) ? left_el : el; // Return the leftmost element
 }
 
 NodeList* get_element_at_offset(NodeList* start, int offset)
@@ -197,6 +196,14 @@ NodeList* get_element_at_offset(NodeList* start, int offset)
     el = el->next;
   }
   return el;
+}
+
+void append_element(NodeList* start, NodeList* new_element)
+{
+  NodeList* el;
+  for (el = start; el->next != NULL; el = el->next)
+  ;
+  el->next = new_element;
 }
 
 // Build tree from sorted list
@@ -219,7 +226,10 @@ void check_list_integrity(NodeList* first, int num_items) {
   NodeList* el = first;
   debug("Checking list\n");
   while (num_items-- > 0) {
-    debug_arg("%s\n", el->node->word);
+    if (strlen(el->node->word) == 0) {
+      debug("Word of zero length");
+      exit(1);
+    }
     el = el->next;
   }
 }
