@@ -215,16 +215,15 @@ Treenode* get_tree(NodeList* first, int num_items)
   mid_node_el->node->right = NULL;
   if (num_items > 1) {
     mid_node_el->node->left = get_tree(first, mid_offset);
-    if (num_items > 2) {
-      mid_node_el->node->right = get_tree(mid_node_el->next, num_items - mid_offset - 1);
-    }
+  }
+  if (num_items > 2) {
+    mid_node_el->node->right = get_tree(mid_node_el->next, num_items - mid_offset - 1);
   }
   return mid_node_el->node;
 }
 
 void check_list_integrity(NodeList* first, int num_items) {
   NodeList* el = first;
-  debug("Checking list\n");
   while (num_items-- > 0) {
     if (strlen(el->node->word) == 0) {
       debug("Word of zero length");
@@ -234,15 +233,25 @@ void check_list_integrity(NodeList* first, int num_items) {
   }
 }
 
+
+// Free the memory acquired by the sorted node list
+void free_sorted_list(NodeList* first) {
+  NodeList* el = first;
+  NodeList* next;
+  for (; next != NULL; el = next) {
+    next = el->next;
+    free(el);
+  }
+}
+
 Treenode* balance_tree(Treenode* root)
 {
   Treenode* new_root;
   NodeList* sorted_list;
-  debug("Making sorted list\n");
   sorted_list = build_sorted_node_list(root);
   check_list_integrity(sorted_list, num_nodes);
-  debug("Making new tree\n");
   new_root = get_tree(sorted_list, num_nodes);
+  free_sorted_list(sorted_list);
   debug_arg("Built balanced tree. New root word is: %s\n", new_root->word);
   return new_root;
 }
